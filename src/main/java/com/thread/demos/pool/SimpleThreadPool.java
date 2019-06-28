@@ -7,6 +7,7 @@ import java.util.stream.IntStream;
 
 /**
  * todo 能够自动维护线程池得大小
+ * 线程池就是开几个线程不断的从任务队列中去取任务来执行
  * @author: xch
  * @create: 2019-06-25 09:47
  **/
@@ -49,6 +50,7 @@ public class SimpleThreadPool {
     public void submit(Runnable runnable) {
         synchronized (TASK_QUEUES) {
             TASK_QUEUES.addLast(runnable);
+            TASK_QUEUES.notifyAll();
         }
     }
 
@@ -92,6 +94,7 @@ public class SimpleThreadPool {
             Runnable runnable;
             while (!ThreadState.DEAD.equals(threadState)) {
                 synchronized (TASK_QUEUES) {
+                    //只要没有任务了，那么线程就阻塞，而不是关闭
                     while (TASK_QUEUES.isEmpty()) {
                         setThreadState(ThreadState.BLOCKED);
                         try {
